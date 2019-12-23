@@ -2,15 +2,13 @@
 
 ## What does this fuzzer do?
 
-1. Sends various attack patterns to all the endpoints defined in the OpenAPI 3 spec file, matching the parameters defined in the specification.
-2. Verifies if the response matches those defined in the OAS3 spec file, complains and exit(2) if it doesn't.
-3. Complains loudly and exit(1) if an endpoint returns an internal server error (status code 500 and higher)
+1. Sends various attack patterns to all the paths defined in an OpenAPI 3 definition file, using the OAS3 definition to create populate requests.
+2. Verifies if the responses matches those defined in the OAS3 definition file, complains and exit(2) if it doesn't.
+3. Complains loudly and exit(1) if a path returns an internal server error (status code 500 and higher)
 
 ## Why does this OpenAPI fuzzer exist?
 
-To make it easy to integrate a fuzzer in a CICD pipeline.
-
-It was also quicker to write this than to figure out how other fully featured and complex OAS3 supporting security tools like SoapUI Pro from Smartbear, AppSecInsight from Rapid7 or OWASP ZAP work in a CICD pipeline. 
+To make it easy to integrate a OpenAPI 3 fuzzer in a CICD pipeline.
 
 ## How do I use this?
 
@@ -34,17 +32,47 @@ It was also quicker to write this than to figure out how other fully featured an
     --auth AUTH           Authorization header field, e.g. "Bearer
                             longbase64string", or "Basic shortb64string"
     --dont_fail_on DONT_FAIL_ON
-                            DONT_FAIL_ON can be: "nonconformance", which makes the fuzzer exit successfully even if API responses do not match the OAS3 spec file
+                            DONT_FAIL_ON can be: "nonconformance", which makes
+                            the fuzzer exit successfully even if API responses
+                            do not match the OAS3 spec file
     ````
 
-## What OAS3 definitions are supported?
+Example:
 
-1. GET requests to URL's with or without path parameters
-1. POST requests to URL's with or without path parameters
-2. POST requestBody schemas in application/json containing:
-    * string
-    * integer
-    * number
+```
+python openapi3-fuzzer https://dev.myapi.example \
+    https://dev.myapi.example/openapi.json \
+    --auth "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+```
+
+## What OAS3 items are supported?
+
+Based on [OpenAPI specification 3.0.2](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md):
+
+Operation | Supported
+----------|----------
+GET       | Yes
+POST      | Yes
+PUT       | no
+DELETE    | no
+OPTIONS   | no
+HEAD      | no
+PATCH     | no
+TRACE     | no
+
+Parameter in | Supported
+-------------|----------
+path         | Yes
+query        | no
+header       | no
+cookie       | no
+
+Property types | Supported
+---------------|----------
+string         | Yes
+integer        | Yes
+number         | Yes
+boolean        | no
 
 ## Example output
 
