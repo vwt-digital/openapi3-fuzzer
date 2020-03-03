@@ -173,14 +173,16 @@ def do_post_fuzzing(*args, **kwargs):
             stats[r.status_code] = 1
         if (r.status_code not in responses) and r.status_code < 500:
             print(
-                "\n- Unexpected status code\n  Endpoint returned {} but expected one of {}\n  POST {}\n{}".format(r.status_code, responses,
-                                                                                                                  url, json.dumps(payload,
-                                                                                                                                  indent=4)))
+                "\n- Unexpected status code\n  Endpoint returned {} but expected one of {}\n  POST {}\n{}"
+                .format(r.status_code, responses,
+                        url, json.dumps(payload,
+                                        indent=4)))
         elif r.status_code >= 500:
             print(
-                "\n* INTERNAL SERVER ERROR\n  Endpoint returned {} but expected one of {}\n  POST {}\n{}".format(r.status_code, responses,
-                                                                                                                 url, json.dumps(payload,
-                                                                                                                                 indent=4)))
+                "\n* INTERNAL SERVER ERROR\n  Endpoint returned {} but expected one of {}\n  POST {}\n{}"
+                .format(r.status_code, responses,
+                        url, json.dumps(payload,
+                                        indent=4)))
     return stats
 
 
