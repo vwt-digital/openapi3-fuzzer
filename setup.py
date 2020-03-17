@@ -3,9 +3,9 @@ from distutils.core import setup
 setup(
     name='openapi3-fuzzer',
     packages=['openapi3_fuzzer'],
-    package_dir={'mypkg': 'openapi3_fuzzer'},
-    package_data={'mypkg': ['openapi3_fuzzer/*.txt']},
-    version='0.4',
+    package_dir={'openapi3_fuzzer': 'openapi3_fuzzer'},
+    package_data={'openapi3_fuzzer': ['openapi3_fuzzer/*.txt']},
+    version='0.5',
     license='gpl-3.0',
     description='Openapi3 fuzzer',
     author='VolkerWessels Telecom',
