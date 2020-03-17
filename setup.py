@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name='openapi3-fuzzer',
     packages=find_packages(),
-    package_data={'': ['openapi3_fuzzer/*.txt']},
+    package_data={'': ['openapi3-fuzzer/openapi3_fuzzer/fuzz/*.txt']},
     include_package_data=True,
     version='0.5.1',
     license='gpl-3.0',

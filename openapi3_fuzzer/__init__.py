@@ -47,9 +47,9 @@ def do_get_req(mytestcase, ep, headers):
 
 
 def get_happyday_pattern(datatype):
-    fuzzdbfile = "fuzz-{}.txt".format(
+    fuzzdbfile = "fuzz/fuzz-{}.txt".format(
         re.sub(r'[^a-zA-Z]', '', datatype))
-    fuzzdbfallbackfile = "fuzz-fallback.txt"
+    fuzzdbfallbackfile = "fuzz/fuzz-fallback.txt"
     happydaystring = ""
     if os.path.exists(fuzzdbfile):
         with open(fuzzdbfile) as f:
@@ -64,9 +64,9 @@ def get_happyday_pattern(datatype):
 
 
 def get_fuzz_patterns(datatype):
-    fuzzdbfile = "fuzz-{}.txt".format(
+    fuzzdbfile = "fuzz/fuzz-{}.txt".format(
         re.sub(r'[^a-zA-Z]', '', datatype))
-    fuzzdbfallbackfile = "fuzz-fallback.txt"
+    fuzzdbfallbackfile = "fuzz/fuzz-fallback.txt"
     lines = []
     if os.path.exists(fuzzdbfile):
         with open(fuzzdbfile) as f:
