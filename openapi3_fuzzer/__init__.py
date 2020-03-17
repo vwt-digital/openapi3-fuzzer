@@ -1,12 +1,10 @@
-import json
 import requests
 import re
-import sys
 from prance import ResolvingParser
 from time import sleep
 
 
-def do_post_req(ep, headers, payload):
+def do_post_req(app, ep, headers, payload):
     """
     Perform an actual POST request
     returns the response object r
@@ -23,7 +21,7 @@ def do_post_req(ep, headers, payload):
         return r
 
 
-def do_get_req(ep, headers):
+def do_get_req(app, ep, headers):
     """
     Perform an actual GET request
     returns the response object r
@@ -37,26 +35,26 @@ def do_get_req(ep, headers):
         return ({"status_code": -1, "content": ""})
     else:
         # print("    GET request to {} returned status {}: {}".format(ep,r.status_code, r.content))
-        return (r)
+        return r
 
 
 def get_happyday_pattern(datatype):
     try:
-        fuzzdbfile = "openapi3_fuzzer/fuzz-{}.txt".format(re.sub(r'[^a-zA-Z]', '', datatype))
+        fuzzdbfile = "fuzz-{}.txt".format(re.sub(r'[^a-zA-Z]', '', datatype))
         if re.sub(r'[^a-zA-Z]', '', datatype) == 'object':
-            fuzzdbfile = "openapi3_fuzzer/fuzz-fallback.txt"
+            fuzzdbfile = "fuzz-fallback.txt"
     except FileNotFoundError:
-        fuzzdbfile = "openapi3_fuzzer/fuzz-fallback.txt"
+        fuzzdbfile = "fuzz-fallback.txt"
     happydaystring = open(fuzzdbfile).readlines()[0].rstrip()
     return happydaystring
 
 
 def get_fuzz_patterns(datatype):
-    fuzzdbfile = "openapi3_fuzzer/fuzz-{}.txt".format(re.sub(r'[^a-zA-Z]', '', datatype))
+    fuzzdbfile = "fuzz-{}.txt".format(re.sub(r'[^a-zA-Z]', '', datatype))
     try:
         lines = open(fuzzdbfile).readlines()
     except FileNotFoundError:
-        fuzzdbfile = "openapi3_fuzzer/fuzz-fallback.txt"
+        fuzzdbfile = "fuzz-fallback.txt"
         lines = open(fuzzdbfile).readlines()
     return lines
 
@@ -150,6 +148,7 @@ def do_post_fuzzing(*args, **kwargs):
     pathvars = kwargs.get('pathvars', {})
     postvars = kwargs.get('postvars', {})
     responses = kwargs.get('responses', [])
+    app = kwargs.get('app', None)
 
     newresponses = []
     for response in responses:
@@ -161,29 +160,14 @@ def do_post_fuzzing(*args, **kwargs):
 
     url = generate_happy_day_url_from_pathvars(baseurl, path, pathvars)
     payloads = generate_payloads_from_postvars(postvars)
-    stats = {}
-    stats['path'] = path
-    stats['method'] = 'POST'
 
     for payload in payloads:
-        r = do_post_req(url, headers, payload)
-        try:
-            stats[r.status_code] = stats[r.status_code] + 1
-        except KeyError:
-            stats[r.status_code] = 1
-        if (r.status_code not in responses) and r.status_code < 500:
-            print(
-                "\n- Unexpected status code\n  Endpoint returned {} but expected one of {}\n  POST {}\n{}"
-                .format(r.status_code, responses,
-                        url, json.dumps(payload,
-                                        indent=4)))
-        elif r.status_code >= 500:
-            print(
-                "\n* INTERNAL SERVER ERROR\n  Endpoint returned {} but expected one of {}\n  POST {}\n{}"
-                .format(r.status_code, responses,
-                        url, json.dumps(payload,
-                                        indent=4)))
-    return stats
+        with app.subTest(method="POST", url=url, payload=payload,
+                         headers=headers):
+            r = do_post_req(app, url, headers, payload)
+            app.assertLess(r.status_code, 500)
+            app.assertIn(r.status_code, responses)
+    return True
 
 
 def do_get_fuzzing(*args, **kwargs):
@@ -195,6 +179,7 @@ def do_get_fuzzing(*args, **kwargs):
     path = kwargs.get('path', None)
     pathvars = kwargs.get('pathvars', {})
     responses = kwargs.get('responses', [])
+    app = kwargs.get('app', None)
 
     urls = generate_urls_from_pathvars(baseurl, path, pathvars)
     stats = {}
@@ -210,82 +195,55 @@ def do_get_fuzzing(*args, **kwargs):
     responses = newresponses
 
     for url in urls:
-        r = do_get_req(url, headers)
-        try:
-            stats[r.status_code] = stats[r.status_code] + 1
-        except KeyError:
-            stats[r.status_code] = 1
-        if (r.status_code not in responses) and r.status_code < 500:
-            print("\n- Unexpected status code\n  Endpoint returned {} but expected one of {}\n  GET {}".format(r.status_code, responses,
-                                                                                                               url))
-            try:
-                stats["nonconformance"] = stats["nonconformance"] + 1
-            except KeyError:
-                stats["nonconformance"] = 1
-        elif r.status_code >= 500:
-            print(
-                "\n* INTERNAL SERVER ERROR\n  Endpoint returned {} but expected one of {}\n  GET {}".format(r.status_code, responses, url))
-            try:
-                stats["internalservererror"] = stats["internalservererror"] + 1
-            except KeyError:
-                stats["internalservererror"] = 1
-
-    return stats
+        with app.subTest(method="GET", url=url, headers=headers):
+            r = do_get_req(app, url, headers)
+            app.assertLess(r.status_code, 500)
+            app.assertIn(r.status_code, responses)
+    return True
 
 
-class Fuzzer:
+class FuzzIt:
 
-    def __init__(self, spec: str, token: str):
+    def __init__(self, spec_r: str, token: str, app):
 
         baseurl = ''
-        specurl = spec
+        specurl = spec_r
         headers = {"Authorization": f"Bearer {token}",
                    "Content-type": "application/json"}
 
         parser = ResolvingParser(specurl)
-        spec = parser.specification  # contains fully resolved specs as a dict
-        # print(json.dumps(parser.specification.get("paths").get("/employees/expenses/{expenses_id}/attachments").get("post"),indent=2))
-        allstats = []
+        spec = parser.specification
         for path, pathvalues in spec.get("paths", {}).items():
             for method, methodvalues in pathvalues.items():
-                pathvars = {}
-                postvars = {}
                 if method == 'get':
                     if 'parameters' in methodvalues.keys():
                         pathvars = methodvalues.get("parameters", {})
                         responses = list(methodvalues.get("responses", {}).keys())
                         print("--------------------------------------------")
                         print("GET fuzzing {}".format(path))
-                        stats = do_get_fuzzing(baseurl=baseurl, headers=headers, path=path, pathvars=pathvars, responses=responses)
-                        allstats.append(stats)
+                        do_get_fuzzing(app=app, baseurl=baseurl,
+                                       headers=headers, path=path,
+                                       pathvars=pathvars, responses=responses)
                 if method == 'post':
                     responses = list(methodvalues.get("responses", {}).keys())
-                    if 'requestBody' in methodvalues.keys() and 'parameters' in methodvalues.keys():
+                    if 'requestBody' in methodvalues.keys() and \
+                            'parameters' in methodvalues.keys():
                         pathvars = methodvalues.get("parameters")
-                        postvars = methodvalues.get("requestBody", {}).get("content", {}).get("application/json", {}).get("schema",
-                                                                                                                          {}).get(
-                            "properties", {})
+                        postvars = methodvalues.get("requestBody", {}).get(
+                            "content", {}).get("application/json", {}).get(
+                            "schema", {}).get("properties", {})
                         print("--------------------------------------------")
                         print("POST fuzzing param URL {}:".format(path))
-                        stats = do_post_fuzzing(baseurl=baseurl, headers=headers, path=path, pathvars=pathvars, postvars=postvars,
-                                                responses=responses)
-                        allstats.append(stats)
+                        do_post_fuzzing(app=app, baseurl=baseurl,
+                                        headers=headers, path=path,
+                                        pathvars=pathvars, postvars=postvars,
+                                        responses=responses)
                     elif 'requestBody' in methodvalues.keys():
-                        postvars = methodvalues.get("requestBody", {}).get("content", {}).get("application/json", {}).get("schema",
-                                                                                                                          {}).get(
-                            "properties", {})
+                        postvars = methodvalues.get("requestBody", {}).get(
+                            "content", {}).get("application/json", {}).get(
+                            "schema", {}).get("properties", {})
                         print("--------------------------------------------")
                         print("POST fuzzing non-param URL {}:".format(path))
-                        stats = do_post_fuzzing(baseurl=baseurl, headers=headers, path=path, postvars=postvars, responses=responses)
-                        allstats.append(stats)
-                sys.stdout.flush()
-
-        print("============================================")
-        print(json.dumps(allstats, indent=2))
-
-        if any('internalservererror' in d for d in allstats):
-            exit(1)
-        elif any('nonconformance' in d for d in allstats):
-            exit(2)
-        else:
-            exit(0)
+                        do_post_fuzzing(app=app, baseurl=baseurl,
+                                        headers=headers, path=path,
+                                        postvars=postvars, responses=responses)
