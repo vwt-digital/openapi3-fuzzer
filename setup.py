@@ -1,10 +1,11 @@
 from distutils.core import setup
-import setuptools
 
 setup(
     name='openapi3-fuzzer',
-    packages=setuptools.find_packages(),
-    version='0.3',
+    packages=['openapi3_fuzzer'],
+    package_dir={'mypkg': 'openapi3_fuzzer'},
+    package_data={'mypkg': ['openapi3_fuzzer/*.txt']},
+    version='0.4',
     license='gpl-3.0',
     description='Openapi3 fuzzer',
     author='VolkerWessels Telecom',
