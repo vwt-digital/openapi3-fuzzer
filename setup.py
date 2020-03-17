@@ -4,7 +4,7 @@ import setuptools
 setup(
     name='openapi3-fuzzer',
     packages=setuptools.find_packages(),
-    version='0.2',
+    version='0.3',
     license='gpl-3.0',
     description='Openapi3 fuzzer',
     author='VolkerWessels Telecom',
@@ -17,8 +17,7 @@ setup(
         "Operating System :: OS Independent",
     ],
     install_requires=[
-        'prance==0.17.0',
-        'requests==2.22.0'
+        'prance==0.17.0'
     ],
     python_requires='>=3.6',
 )
