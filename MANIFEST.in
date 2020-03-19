@@ -1,0 +1,1 @@
+include openapi3_fuzzer/fuzz/*.txt
