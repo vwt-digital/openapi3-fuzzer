@@ -13,8 +13,15 @@ To make it easy to integrate an OpenAPI 3 fuzzer in an existing API.
 ## How do I use this?
 
 1. Install the fuzzer using its [pip package](https://pypi.org/project/openapi3-fuzzer/)
-2. Generate OpenAPI (https://github.com/OpenAPITools/openapi-generator)
-3. Create a test_fuzzing file in the test location using the template below:
+2. Add at least the following packages to requirements-test.txt:
+````python
+coverage==5.0.3
+openapi3-fuzzer
+adal==1.2.2
+Flask-Testing==0.7.1
+````
+3. Generate OpenAPI (https://github.com/OpenAPITools/openapi-generator)
+4. Create a test_fuzzing file in the test location using the template below:
 ````python
 from openapi3_fuzzer import FuzzIt
 
@@ -29,7 +36,7 @@ class TestvAPI(BaseTestCase):
     def test_fuzzing(self):
         FuzzIt("openapi_location/yaml.yaml", get_token(), self)
 ````
-4. Run using our [unittest container](https://github.com/vwt-digital/cloudbuilder-unittest) or via the [Python Unittest Framework](https://docs.python.org/3/library/unittest.html)
+5. Run using our [unittest container](https://github.com/vwt-digital/cloudbuilder-unittest) or via the [Python Unittest Framework](https://docs.python.org/3/library/unittest.html)
 
 ## What OAS3 items are supported?
 
