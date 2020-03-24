@@ -12,7 +12,7 @@ To make it easy to integrate an OpenAPI 3 fuzzer in an existing API.
 
 ## How do I use this?
 
-1. Install the fuzzer using it's [pip package](https://pypi.org/project/openapi3-fuzzer/)
+1. Install the fuzzer using its [pip package](https://pypi.org/project/openapi3-fuzzer/)
 2. Generate OpenAPI (https://github.com/OpenAPITools/openapi-generator)
 3. Create a test_fuzzing file in the test location using the template below:
 ````python
@@ -29,7 +29,7 @@ class TestvAPI(BaseTestCase):
     def test_fuzzing(self):
         FuzzIt("openapi_location/yaml.yaml", get_token(), self)
 ````
-4. Run using our [unittest container](https://github.com/vwt-digital/cloudbuilder-unittest) or via [Python Unittest Framework](https://docs.python.org/3/library/unittest.html)
+4. Run using our [unittest container](https://github.com/vwt-digital/cloudbuilder-unittest) or via the [Python Unittest Framework](https://docs.python.org/3/library/unittest.html)
 
 ## What OAS3 items are supported?
 
