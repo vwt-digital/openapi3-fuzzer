@@ -23,18 +23,37 @@ Flask-Testing==0.7.1
 3. Generate OpenAPI (https://github.com/OpenAPITools/openapi-generator)
 4. Create a test_fuzzing file in the test location using the template below:
 ````python
+import adal
+
+import config
 from openapi3_fuzzer import FuzzIt
+from openapi_server.test import BaseTestCase
 
 
 def get_token():
+    """
+    Create a token for testing
+    :return:
+    """
+    oauth_expected_authenticator = authenticatoruri
+    client_id = appid
+    client_secret = secret
+    resource = resource/audience
 
+    # get an Azure access token using the adal library
+    context = adal.AuthenticationContext(oauth_expected_authenticator)
+    token_response = context.acquire_token_with_client_credentials(
+        resource, client_id, client_secret)
+
+    access_token = token_response.get('accessToken')
     return access_token
 
 
 class TestvAPI(BaseTestCase):
 
     def test_fuzzing(self):
-        FuzzIt("openapi_location/yaml.yaml", get_token(), self)
+        FuzzIt("openapi.yaml", get_token(), self)
+
 ````
 5. Run using our [unittest container](https://github.com/vwt-digital/cloudbuilder-unittest) or via the [Python Unittest Framework](https://docs.python.org/3/library/unittest.html)
 
