@@ -8,42 +8,54 @@
 
 ## Why does this OpenAPI fuzzer exist?
 
-To make it easy to integrate a OpenAPI 3 fuzzer in a CICD pipeline.
+To make it easy to integrate an OpenAPI 3 fuzzer in an existing API.
 
 ## How do I use this?
 
-1. git clone https://github.com/jorritfolmer/openapi3-fuzzer.git
-1. virtualenv venv
-1. source venv/bin/activate
-1. pip install -r requirements.txt
-1. python openapi3-fuzzer.py --help
-    ````
-    usage: openapi3-fuzzer.py [-h] [--auth AUTH] [--dont_fail_on DONT_FAIL_ON]
-                            base_url oas3spec_url
+1. Install the fuzzer using its [pip package](https://pypi.org/project/openapi3-fuzzer/)
+2. Add at least the following packages to requirements-test.txt:
+````python
+coverage==5.0.3
+openapi3-fuzzer
+adal==1.2.2
+Flask-Testing==0.7.1
+````
+3. Generate OpenAPI (https://github.com/OpenAPITools/openapi-generator)
+4. Create a test_fuzzing file in the test location using the template below:
+````python
+import adal
 
-    positional arguments:
-    base_url              Base URL of the OAS3 API, e.g.
-                            https://dev.myapi.example, without trailing slash
-    oas3spec_url          URL to fetch the OpenAPI3 spec file from, e.g.
-                            https://dev.myapi.example/openapi.json
+import config
+from openapi3_fuzzer import FuzzIt
+from openapi_server.test import BaseTestCase
 
-    optional arguments:
-    -h, --help            show this help message and exit
-    --auth AUTH           Authorization header field, e.g. "Bearer
-                            longbase64string", or "Basic shortb64string"
-    --dont_fail_on DONT_FAIL_ON
-                            DONT_FAIL_ON can be: "nonconformance", which makes
-                            the fuzzer exit successfully even if API responses
-                            do not match the OAS3 spec file
-    ````
 
-Example:
+def get_token():
+    """
+    Create a token for testing
+    :return:
+    """
+    oauth_expected_authenticator = authenticatoruri
+    client_id = appid
+    client_secret = secret
+    resource = resource/audience
 
-```
-python openapi3-fuzzer https://dev.myapi.example \
-    https://dev.myapi.example/openapi.json \
-    --auth "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
-```
+    # get an Azure access token using the adal library
+    context = adal.AuthenticationContext(oauth_expected_authenticator)
+    token_response = context.acquire_token_with_client_credentials(
+        resource, client_id, client_secret)
+
+    access_token = token_response.get('accessToken')
+    return access_token
+
+
+class TestvAPI(BaseTestCase):
+
+    def test_fuzzing(self):
+        FuzzIt("openapi.yaml", get_token(), self)
+
+````
+5. Run using our [unittest container](https://github.com/vwt-digital/cloudbuilder-unittest) or via the [Python Unittest Framework](https://docs.python.org/3/library/unittest.html)
 
 ## What OAS3 items are supported?
 
