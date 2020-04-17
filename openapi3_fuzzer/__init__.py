@@ -221,24 +221,21 @@ def do_get_fuzzing(*args, **kwargs):
     return True
 
 
-def do_fuzzing(mytestcase, headers, spec_r):
+def do_fuzzing(mytestcase, headers, spec_r, url_addition):
     self = mytestcase
     baseurl = ""
 
     parser = ResolvingParser(spec_r)
     spec = parser.specification  # contains fully resolved specs as a dict
-    # print(json.dumps(parser.specification.get("paths").get(
-    #     "/employees/expenses/{expenses_id}/attachments").get(
-    #     "post"),indent=2))
     for path, pathvalues in spec.get("paths", {}).items():
+        if url_addition is not None:
+            path += url_addition
         for method, methodvalues in pathvalues.items():
             pathvars = {}
             if method == 'get':
                 if 'parameters' in methodvalues.keys():
                     pathvars = methodvalues.get("parameters", {})
                     responses = list(methodvalues.get("responses", {}).keys())
-                    # print("--------------------------------------------")
-                    # print("GET fuzzing {}".format(path))
                     do_get_fuzzing(mytestcase=self, baseurl=baseurl,
                                    headers=headers, path=path,
                                    pathvars=pathvars, responses=responses)
@@ -250,8 +247,6 @@ def do_fuzzing(mytestcase, headers, spec_r):
                     postvars = methodvalues.get("requestBody", {}).get(
                         "content", {}).get("application/json", {}).get(
                         "schema", {}).get("properties", {})
-                    # print("--------------------------------------------")
-                    # print("POST fuzzing param URL {}:".format(path))
                     do_post_fuzzing(mytestcase=self, baseurl=baseurl,
                                     headers=headers, path=path,
                                     pathvars=pathvars, postvars=postvars,
@@ -260,8 +255,6 @@ def do_fuzzing(mytestcase, headers, spec_r):
                     postvars = methodvalues.get("requestBody", {}).get(
                         "content", {}).get("application/json", {}).get(
                         "schema", {}).get("properties", {})
-                    # print("--------------------------------------------")
-                    # print("POST fuzzing non-param URL {}:".format(path))
                     do_post_fuzzing(mytestcase=self, baseurl=baseurl,
                                     headers=headers, path=path,
                                     postvars=postvars, responses=responses)
@@ -269,10 +262,10 @@ def do_fuzzing(mytestcase, headers, spec_r):
 
 class FuzzIt:
 
-    def __init__(self, spec_r: str, token: str, app):
+    def __init__(self, spec_r: str, token: str, app, url_addition=None):
         headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': f'Bearer {token}',
         }
-        do_fuzzing(app, headers, spec_r)
+        do_fuzzing(app, headers, spec_r, url_addition)
