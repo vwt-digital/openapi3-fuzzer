@@ -221,15 +221,13 @@ def do_get_fuzzing(*args, **kwargs):
     return True
 
 
-def do_fuzzing(mytestcase, headers, spec_r, url_addition):
+def do_fuzzing(mytestcase, headers, spec_r):
     self = mytestcase
     baseurl = ""
 
     parser = ResolvingParser(spec_r)
     spec = parser.specification  # contains fully resolved specs as a dict
     for path, pathvalues in spec.get("paths", {}).items():
-        if url_addition is not None:
-            path += url_addition
         for method, methodvalues in pathvalues.items():
             pathvars = {}
             if method == 'get':
@@ -262,10 +260,13 @@ def do_fuzzing(mytestcase, headers, spec_r, url_addition):
 
 class FuzzIt:
 
-    def __init__(self, spec_r: str, token: str, app, url_addition=None):
+    def __init__(self, spec_r: str, token: str, app, header_addition=None):
         headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'Authorization': f'Bearer {token}',
+            'Authorization': f'Bearer {token}'
         }
-        do_fuzzing(app, headers, spec_r, url_addition)
+        if header_addition is not None and isinstance(header_addition, dict):
+            for key, value in header_addition.items():
+                headers[key] = value
+        do_fuzzing(app, headers, spec_r)

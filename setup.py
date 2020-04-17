@@ -5,7 +5,7 @@ setup(
     packages=find_packages(),
     package_data={'': ['openapi3-fuzzer/openapi3_fuzzer/fuzz/*.txt']},
     include_package_data=True,
-    version='1.1',
+    version='1.1.2',
     license='gpl-3.0',
     description='Openapi3 fuzzer',
     author='VolkerWessels Telecom',
