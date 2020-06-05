@@ -68,6 +68,26 @@ def do_head_req(mytestcase, ep, headers):
         return r
 
 
+def do_delete_req(mytestcase, ep, headers):
+    """
+    Perform an actual DELETE request
+    returns the response object r
+    """
+    self = mytestcase
+    try:
+        # print("--- Starting DELETE request to {}".format(ep))
+        sleep(0.05)
+        r = self.client.open(
+            ep,
+            method='DELETE',
+            headers=headers)
+    except Exception as e:
+        print("    Exception connecting to {} with {}".format(ep, str(e)))
+        return {"status_code": -1, "content": ""}
+    else:
+        return r
+
+
 def do_put_req(mytestcase, ep, headers, payload):
     """
     Perform an actual POST request
@@ -295,6 +315,35 @@ def do_head_fuzzing(*args, **kwargs):
     return True
 
 
+def do_delete_fuzzing(*args, **kwargs):
+    """
+    Perform fuzzing on a DELETE endpoint
+    """
+    baseurl = kwargs.get('baseurl', "")
+    headers = kwargs.get('headers', {})
+    path = kwargs.get('path', None)
+    pathvars = kwargs.get('pathvars', {})
+    responses = kwargs.get('responses', [])
+    test_case = kwargs.get('mytestcase', None)
+
+    newresponses = []
+    for response in responses:
+        try:
+            newresponses.append(int(response))
+        except ValueError:
+            newresponses.append(response)
+    responses = newresponses
+
+    urls = generate_urls_from_pathvars(baseurl, path, pathvars)
+
+    for url in urls:
+        with test_case.subTest(method="DELETE", url=url, headers=headers):
+            result = do_delete_req(test_case, url, headers)
+            test_case.assertLess(result.status_code, 500)
+            test_case.assertIn(result.status_code, responses)
+    return True
+
+
 def do_put_fuzzing(*args, **kwargs):
     """
     Perform fuzzing on a PUT endpoint
@@ -350,6 +399,14 @@ def do_fuzzing(my_testcase: TestCase, headers: Dict[str, str], spec_r: str):
                     do_head_fuzzing(mytestcase=self, baseurl=baseurl,
                                     headers=headers, path=path,
                                     pathvars=pathvars, responses=responses)
+
+            if method == 'delete':
+                if 'parameters' in methodvalues.keys():
+                    pathvars = methodvalues.get("parameters", {})
+                    responses = list(methodvalues.get("responses", {}).keys())
+                    do_delete_fuzzing(mytestcase=self, baseurl=baseurl,
+                                      headers=headers, path=path,
+                                      pathvars=pathvars, responses=responses)
             if method == 'post':
                 responses = list(methodvalues.get("responses", {}).keys())
                 if 'requestBody' in methodvalues.keys() and \
