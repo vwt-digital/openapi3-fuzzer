@@ -1,8 +1,10 @@
+from flask_testing import TestCase
+import json
 import os
 import re
-import json
-from prance import ResolvingParser
 from time import sleep
+from typing import List, Dict
+from prance import ResolvingParser
 
 
 def do_post_req(mytestcase, ep, headers, payload):
@@ -41,6 +43,27 @@ def do_get_req(mytestcase, ep, headers):
             headers=headers)
     except Exception as e:
         print("    Exception connecting to {} with {}".format(ep, str(e)))
+        return {"status_code": -1, "content": ""}
+    else:
+        return r
+
+
+def do_put_req(mytestcase, ep, headers, payload):
+    """
+    Perform an actual POST request
+    returns the response object r
+    """
+    self = mytestcase
+    try:
+        # print("--- Starting POST request to {}".format(ep))
+        sleep(0.05)
+        r = self.client.open(
+            ep,
+            method='PUT',
+            data=json.dumps(payload),
+            headers=headers)
+    except Exception as e:
+        print("Exception connecting to {} with {}".format(ep, str(e)))
         return {"status_code": -1, "content": ""}
     else:
         return r
@@ -121,7 +144,7 @@ def generate_urls_from_pathvars(baseurl, path, pathvars):
     return urls
 
 
-def generate_payloads_from_postvars(postvars):
+def generate_payloads_from_request_vars(request_vars) -> List[Dict[str, str]]:
     """
     From a given OAS3 dict of requestBody variables
     generate a list of payload dicts
@@ -130,13 +153,13 @@ def generate_payloads_from_postvars(postvars):
     payload = {}
 
     for jsontype in ["int", "str", "arr", "none"]:
-        for fuzzparam in postvars.keys():
-            datatype = postvars.get(fuzzparam, {}).get("type", "fallback")
+        for fuzzparam in request_vars.keys():
+            datatype = request_vars.get(fuzzparam, {}).get("type", "fallback")
             lines = get_fuzz_patterns(datatype)
             for line in lines:
                 payload = {}
-                for param in postvars.keys():
-                    datatype = postvars.get(param, {}).get("type", "")
+                for param in request_vars.keys():
+                    datatype = request_vars.get(param, {}).get("type", "")
                     happydaystring = get_happyday_pattern(datatype)
                     if param == fuzzparam:
                         if jsontype == "int" or datatype == "int" or \
@@ -170,7 +193,7 @@ def do_post_fuzzing(*args, **kwargs):
     pathvars = kwargs.get('pathvars', {})
     postvars = kwargs.get('postvars', {})
     responses = kwargs.get('responses', [])
-    self = kwargs.get('mytestcase', None)
+    test_case = kwargs.get('mytestcase', None)
 
     newresponses = []
     for response in responses:
@@ -180,15 +203,17 @@ def do_post_fuzzing(*args, **kwargs):
             newresponses.append(response)
     responses = newresponses
 
+    # Generate url once
     url = generate_happy_day_url_from_pathvars(baseurl, path, pathvars)
-    payloads = generate_payloads_from_postvars(postvars)
+    payloads = generate_payloads_from_request_vars(postvars)
 
+    # And send multiple payloads
     for payload in payloads:
-        with self.subTest(method="POST", url=url, payload=payload,
-                          headers=headers):
-            r = do_post_req(self, url, headers, payload)
-            self.assertLess(r.status_code, 500)
-            self.assertIn(r.status_code, responses)
+        with test_case.subTest(method="POST", url=url, payload=payload,
+                               headers=headers):
+            result = do_post_req(test_case, url, headers, payload)
+            test_case.assertLess(result.status_code, 500)
+            test_case.assertIn(result.status_code, responses)
     return True
 
 
@@ -201,9 +226,7 @@ def do_get_fuzzing(*args, **kwargs):
     path = kwargs.get('path', None)
     pathvars = kwargs.get('pathvars', {})
     responses = kwargs.get('responses', [])
-    self = kwargs.get('mytestcase', None)
-
-    urls = generate_urls_from_pathvars(baseurl, path, pathvars)
+    test_case = kwargs.get('mytestcase', None)
 
     newresponses = []
     for response in responses:
@@ -213,16 +236,50 @@ def do_get_fuzzing(*args, **kwargs):
             newresponses.append(response)
     responses = newresponses
 
+    urls = generate_urls_from_pathvars(baseurl, path, pathvars)
+
     for url in urls:
-        with self.subTest(method="GET", url=url, headers=headers):
-            r = do_get_req(self, url, headers)
-            self.assertLess(r.status_code, 500)
-            self.assertIn(r.status_code, responses)
+        with test_case.subTest(method="GET", url=url, headers=headers):
+            result = do_get_req(test_case, url, headers)
+            test_case.assertLess(result.status_code, 500)
+            test_case.assertIn(result.status_code, responses)
     return True
 
 
-def do_fuzzing(mytestcase, headers, spec_r):
-    self = mytestcase
+def do_put_fuzzing(*args, **kwargs):
+    """
+    Perform fuzzing on a PUT endpoint
+    """
+    baseurl = kwargs.get('baseurl', "")
+    headers = kwargs.get('headers', {})
+    path = kwargs.get('path', None)
+    pathvars = kwargs.get('pathvars', {})
+    putvars = kwargs.get('putvars', {})
+    responses = kwargs.get('responses', [])
+    test_case = kwargs.get('mytestcase', None)
+
+    newresponses = []
+    for response in responses:
+        try:
+            newresponses.append(int(response))
+        except ValueError:
+            newresponses.append(response)
+    responses = newresponses
+
+    url = generate_happy_day_url_from_pathvars(baseurl, path, pathvars)
+
+    payloads = generate_payloads_from_request_vars(putvars)
+    for payload in payloads:
+        with test_case.subTest(method="PUT", url=url, payload=payload,
+                               headers=headers):
+            result = do_put_req(test_case, url, headers, payload)
+            test_case.assertLess(result.status_code, 500)
+            test_case.assertIn(result.status_code, responses)
+    return True
+
+
+def do_fuzzing(my_testcase: TestCase, headers: Dict[str, str], spec_r: str):
+    self = my_testcase
     baseurl = ""
 
     parser = ResolvingParser(spec_r)
@@ -256,11 +313,28 @@ def do_fuzzing(mytestcase, headers, spec_r):
                     do_post_fuzzing(mytestcase=self, baseurl=baseurl,
                                     headers=headers, path=path,
                                     postvars=postvars, responses=responses)
+            if method == 'put':
+                responses = list(methodvalues.get("responses", {}).keys())
+                if all(key in methodvalues.keys() for key in ['requestBody', 'parameters']):
+                    pathvars = methodvalues.get("parameters")
+                    putvars = methodvalues.get("requestBody", {}).get(
+                        "content", {}).get("application/json", {}).get(
+                        "schema", {}).get("properties", {})
+                    do_put_fuzzing(mytestcase=self, baseurl=baseurl,
+                                   headers=headers, path=path,
+                                   pathvars=pathvars, putvars=putvars,
+                                   responses=responses)
+                elif 'requestBody' in methodvalues.keys():
+                    putvars = methodvalues.get("requestBody", {}).get(
+                        "content", {}).get("application/json", {}).get(
+                        "schema", {}).get("properties", {})
+                    do_put_fuzzing(mytestcase=self, baseurl=baseurl,
+                                   headers=headers, path=path,
+                                   putvars=putvars, responses=responses)
 
 
 class FuzzIt:
-
-    def __init__(self, spec_r: str, token: str, app, header_addition=None):
+    def __init__(self, spec_r: str, token: str, test_app: TestCase, header_addition: Dict[str, str] = None):
         headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
@@ -269,4 +343,4 @@ class FuzzIt:
         if header_addition is not None and isinstance(header_addition, dict):
             for key, value in header_addition.items():
                 headers[key] = value
-        do_fuzzing(app, headers, spec_r)
+        do_fuzzing(test_app, headers, spec_r)
