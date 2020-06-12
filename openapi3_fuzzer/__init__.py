@@ -440,7 +440,6 @@ def do_fuzzing(my_testcase: TestCase, headers: Dict[str, str], spec_r: str):
                                     headers=headers, path=path,
                                     postvars=postvars, responses=responses)
             if method == 'put':
-                print("put fuzzed")
                 responses = list(methodvalues.get("responses", {}).keys())
                 if all(key in methodvalues.keys() for key in ['requestBody', 'parameters']):
                     pathvars = methodvalues.get("parameters")
