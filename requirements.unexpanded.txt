@@ -1,0 +1,2 @@
+prance==0.17.0
+flask_testing==0.6.1
