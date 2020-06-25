@@ -184,68 +184,77 @@ def generate_urls_from_pathvars(baseurl, path, pathvars):
     return urls
 
 
-def generate_payloads_from_request_vars(request_vars) -> List[Dict[str, str]]:
+def generate_payloads_from_request_vars(request_vars: dict) -> List[Dict[str, str]]:
     """
+    generate_payloads_from_request_vars: Generate payloads for every datatype in fuzz_types
     From a given OAS3 dict of requestBody variables
     generate a list of payload dicts
+    @param request_vars: dict of requestBody variables
+    @return: list of payload dicts
     """
+    FUZZ_TYPES = ["int", "str", "arr", "none"]  # constant list of types to generate from
     payloads = []
     payload = {}
 
-    for jsontype in ["int", "str", "arr", "none"]:
-        for fuzzparam in request_vars.keys():
-            datatype = request_vars.get(fuzzparam, {}).get("type", "fallback")
-            lines = get_fuzz_patterns(datatype)
-            for line in lines:
+    for fuzz_type in FUZZ_TYPES:
+        for request_key, request_value in request_vars.items():
+            data_type = request_value.get("type", "")
+            fuzz_patterns = get_fuzz_patterns(data_type)
+            for fuzz_pattern in fuzz_patterns:
                 payload = {}
-                for param in request_vars.keys():
-                    datatype = request_vars.get(param, {}).get("type", "")
-                    happydaystring = get_happyday_pattern(datatype)
-                    if param == fuzzparam:
-                        if jsontype == "int" or datatype == "int" or \
-                                datatype == "number":
+                for param_key, param_value in request_vars.items():
+                    data_type = param_value.get("type", "")
+                    happy_day_string = get_happyday_pattern(data_type)
+
+                    if param_key == request_key:
+                        # fuzz both data type and fuzz type
+                        if fuzz_type == "int" or data_type == "int" or data_type == "number":
                             try:
-                                payload[param] = int(line.rstrip())
+                                payload[param_key] = int(fuzz_pattern.rstrip())
                             except ValueError:
-                                payload[param] = line.rstrip()
-                        elif jsontype == "str":
-                            payload[param] = line.rstrip()
-                    else:
-                        if datatype == "int" or datatype == "number":
-                            try:
-                                payload[param] = int(happydaystring)
-                            except ValueError:
-                                payload[param] = happydaystring
+                                payload[param_key] = fuzz_pattern.rstrip()
+                        elif fuzz_type == "str":
+                            payload[param_key] = fuzz_pattern.rstrip()
+                        elif fuzz_type == "arr":
+                            payload[param_key] = fuzz_pattern.rstrip()
+                        elif fuzz_type == "none":
+                            payload[param_key] = fuzz_pattern.rstrip()
                         else:
-                            payload[param] = happydaystring
+                            if data_type == "int" or data_type == "number":
+                                try:
+                                    payload[param_key] = int(happy_day_string)
+                                except ValueError:
+                                    payload[param_key] = happy_day_string
+                            else:
+                                payload[param_key] = happy_day_string
                 payloads.append(payload)
-    payloads_uniq = []
+    payloads_unique = []
     for payload in payloads:
-        if payload not in payloads_uniq:
-            payloads_uniq.append(payload)
-    return payloads_uniq
+        if payload not in payloads_unique:
+            payloads_unique.append(payload)
+    return payloads_unique
 
 
 def do_post_fuzzing(*args, **kwargs):
-    baseurl = kwargs.get('baseurl', "")
+    base_url = kwargs.get('baseurl', "")
     headers = kwargs.get('headers', {})
     path = kwargs.get('path', None)
-    pathvars = kwargs.get('pathvars', {})
-    postvars = kwargs.get('postvars', {})
+    path_vars = kwargs.get('pathvars', {})
+    post_vars = kwargs.get('postvars', {})
     responses = kwargs.get('responses', [])
     test_case = kwargs.get('mytestcase', None)
 
-    newresponses = []
+    new_responses = []
     for response in responses:
         try:
-            newresponses.append(int(response))
+            new_responses.append(int(response))
         except ValueError:
-            newresponses.append(response)
-    responses = newresponses
+            new_responses.append(response)
+    responses = new_responses
 
     # Generate url once
-    url = generate_happy_day_url_from_pathvars(baseurl, path, pathvars)
-    payloads = generate_payloads_from_request_vars(postvars)
+    url = generate_happy_day_url_from_pathvars(base_url, path, path_vars)
+    payloads = generate_payloads_from_request_vars(post_vars)
 
     # And send multiple payloads
     for payload in payloads:
@@ -380,10 +389,14 @@ def do_fuzzing(my_testcase: TestCase, headers: Dict[str, str], spec_r: str):
     self = my_testcase
     baseurl = ""
 
+    fuzz_count = 0
+
     parser = ResolvingParser(spec_r)
     spec = parser.specification  # contains fully resolved specs as a dict
     for path, pathvalues in spec.get("paths", {}).items():
         for method, methodvalues in pathvalues.items():
+            fuzz_count += 1
+
             pathvars = {}
             if method == 'get':
                 if 'parameters' in methodvalues.keys():
@@ -444,6 +457,9 @@ def do_fuzzing(my_testcase: TestCase, headers: Dict[str, str], spec_r: str):
                     do_put_fuzzing(mytestcase=self, baseurl=baseurl,
                                    headers=headers, path=path,
                                    putvars=putvars, responses=responses)
+            else:
+                fuzz_count -= 1  # method in spec is not fuzzed
+    print("Fuzzed " + str(fuzz_count) + " endpoints")
 
 
 class FuzzIt:
