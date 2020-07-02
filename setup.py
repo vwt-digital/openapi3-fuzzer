@@ -15,6 +15,7 @@ setup(
     license='gpl-3.0',
     description='Openapi3 fuzzer',
     long_description=readme,
+    long_description_content_type='text/markdown',
     author='VolkerWessels Telecom',
     author_email='opensource@vwt.digital',
     url='https://github.com/vwt-digital/openapi3-fuzzer/tree/master',
