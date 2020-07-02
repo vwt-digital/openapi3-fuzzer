@@ -65,10 +65,10 @@ Operation | Supported
 ----------|----------
 GET       | Yes
 POST      | Yes
-PUT       | no
-DELETE    | no
+PUT       | Yes
+DELETE    | Yes
+HEAD      | Yes
 OPTIONS   | no
-HEAD      | no
 PATCH     | no
 TRACE     | no
 
@@ -84,6 +84,8 @@ Property types | Supported
 string         | Yes
 integer        | Yes
 number         | Yes
+array          | Yes
+none           | Yes
 boolean        | no
 
 ## Example output

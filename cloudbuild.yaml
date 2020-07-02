@@ -1,0 +1,54 @@
+---
+timeout: 1800s
+options:
+  substitution_option: 'ALLOW_LOOSE'
+  env:
+    - 'VENV=/workspace/venv'
+steps:
+  # Create virtualenv
+  - name: gcr.io/cloud-builders/gcloud
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        pip install virtualenv==16.7.9
+        virtualenv -p python3 "$$VENV"
+        source "$$VENV"/bin/activate
+        pip install twine
+
+  # Build package
+  - name: gcr.io/cloud-builders/gcloud
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        source "$$VENV"/bin/activate
+        export TAG_NAME="$TAG_NAME"
+        python setup.py sdist bdist_wheel
+
+  # Test build output
+  - name: gcr.io/cloud-builders/gcloud
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        source "$$VENV"/bin/activate
+        twine check dist/*
+
+  # Publish package when tagged
+  - name: gcr.io/cloud-builders/gcloud
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        if [[ -n "$TAG_NAME" ]]
+        then
+
+            USERNAME=$(gcloud secrets versions access latest --secret="$PROJECT_ID"-username)
+            PASSWORD=$(gcloud secrets versions access latest --secret="$PROJECT_ID"-password)
+            REPO=$(gcloud secrets versions access latest --secret="$PROJECT_ID"-repo)
+
+            source "$$VENV"/bin/activate
+            twine upload -r "$$REPO" dist/* -u "$$USERNAME" -p "$$PASSWORD"
+
+        fi
