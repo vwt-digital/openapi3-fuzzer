@@ -16,6 +16,16 @@ steps:
         source "$$VENV"/bin/activate
         pip install twine
 
+  # Run unittests
+  - name: gcr.io/cloud-builders/gcloud
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        source "$$VENV"/bin/activate
+        export TAG_NAME="$TAG_NAME"
+        python setup.py test
+
   # Build package
   - name: gcr.io/cloud-builders/gcloud
     entrypoint: bash

@@ -14,7 +14,7 @@ def do_post_req(mytestcase, ep, headers, payload):
     """
     self = mytestcase
     try:
-        # print("--- Starting POST request to {}".format(ep))
+        print("--- Starting POST request to {}".format(ep))
         sleep(0.05)
         r = self.client.open(
             ep,
@@ -35,7 +35,7 @@ def do_get_req(mytestcase, ep, headers):
     """
     self = mytestcase
     try:
-        # print("--- Starting GET request to {}".format(ep))
+        print("--- Starting GET request to {}".format(ep))
         sleep(0.05)
         r = self.client.open(
             ep,
@@ -55,7 +55,7 @@ def do_head_req(mytestcase, ep, headers):
     """
     self = mytestcase
     try:
-        # print("--- Starting HEAD request to {}".format(ep))
+        print("--- Starting HEAD request to {}".format(ep))
         sleep(0.05)
         r = self.client.open(
             ep,
@@ -75,7 +75,7 @@ def do_delete_req(mytestcase, ep, headers):
     """
     self = mytestcase
     try:
-        # print("--- Starting DELETE request to {}".format(ep))
+        print("--- Starting DELETE request to {}".format(ep))
         sleep(0.05)
         r = self.client.open(
             ep,
@@ -95,7 +95,7 @@ def do_put_req(mytestcase, ep, headers, payload):
     """
     self = mytestcase
     try:
-        # print("--- Starting POST request to {}".format(ep))
+        print("--- Starting POST request to {}".format(ep))
         sleep(0.05)
         r = self.client.open(
             ep,
