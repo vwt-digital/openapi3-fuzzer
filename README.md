@@ -124,7 +124,11 @@ POST fuzzing /employees/expenses/{expenses_id}
     "transaction_date": "123"
 }
 ````
-
+## Contributors
+A special thanks to the contributors outside of VWT Digital.
+|Name|Contribution|
+|---|---|
+|[Jorrit Folmer](https://github.com/jorritfolmer)|Started the project and created a base for the fuzzer.|
 ## LICENSE
 
 GPL3
