@@ -219,14 +219,14 @@ def generate_payloads_from_request_vars(request_vars: dict) -> List[Dict[str, st
                             payload[param_key] = fuzz_pattern.rstrip()
                         elif fuzz_type == "none":
                             payload[param_key] = fuzz_pattern.rstrip()
-                        else:
-                            if data_type == "int" or data_type == "number":
-                                try:
-                                    payload[param_key] = int(happy_day_string)
-                                except ValueError:
-                                    payload[param_key] = happy_day_string
-                            else:
+                    else:
+                        if data_type == "int" or data_type == "number":
+                            try:
+                                payload[param_key] = int(happy_day_string)
+                            except ValueError:
                                 payload[param_key] = happy_day_string
+                        else:
+                            payload[param_key] = happy_day_string
                 payloads.append(payload)
     payloads_unique = []
     for payload in payloads:
@@ -405,13 +405,13 @@ def do_fuzzing(my_testcase: TestCase, headers: Dict[str, str], spec_r: str):
                     do_get_fuzzing(mytestcase=self, baseurl=baseurl,
                                    headers=headers, path=path,
                                    pathvars=pathvars, responses=responses)
-            if method == 'head':
-                if 'parameters' in methodvalues.keys():
-                    pathvars = methodvalues.get("parameters", {})
-                    responses = list(methodvalues.get("responses", {}).keys())
-                    do_head_fuzzing(mytestcase=self, baseurl=baseurl,
-                                    headers=headers, path=path,
-                                    pathvars=pathvars, responses=responses)
+            # if method == 'head':
+            #     if 'parameters' in methodvalues.keys():
+            #         pathvars = methodvalues.get("parameters", {})
+            #         responses = list(methodvalues.get("responses", {}).keys())
+            #         do_head_fuzzing(mytestcase=self, baseurl=baseurl,
+            #                         headers=headers, path=path,
+            #                         pathvars=pathvars, responses=responses)
 
             if method == 'delete':
                 if 'parameters' in methodvalues.keys():
@@ -439,24 +439,24 @@ def do_fuzzing(my_testcase: TestCase, headers: Dict[str, str], spec_r: str):
                     do_post_fuzzing(mytestcase=self, baseurl=baseurl,
                                     headers=headers, path=path,
                                     postvars=postvars, responses=responses)
-            if method == 'put':
-                responses = list(methodvalues.get("responses", {}).keys())
-                if all(key in methodvalues.keys() for key in ['requestBody', 'parameters']):
-                    pathvars = methodvalues.get("parameters")
-                    putvars = methodvalues.get("requestBody", {}).get(
-                        "content", {}).get("application/json", {}).get(
-                        "schema", {}).get("properties", {})
-                    do_put_fuzzing(mytestcase=self, baseurl=baseurl,
-                                   headers=headers, path=path,
-                                   pathvars=pathvars, putvars=putvars,
-                                   responses=responses)
-                elif 'requestBody' in methodvalues.keys():
-                    putvars = methodvalues.get("requestBody", {}).get(
-                        "content", {}).get("application/json", {}).get(
-                        "schema", {}).get("properties", {})
-                    do_put_fuzzing(mytestcase=self, baseurl=baseurl,
-                                   headers=headers, path=path,
-                                   putvars=putvars, responses=responses)
+            # if method == 'put':
+            #     responses = list(methodvalues.get("responses", {}).keys())
+            #     if all(key in methodvalues.keys() for key in ['requestBody', 'parameters']):
+            #         pathvars = methodvalues.get("parameters")
+            #         putvars = methodvalues.get("requestBody", {}).get(
+            #             "content", {}).get("application/json", {}).get(
+            #             "schema", {}).get("properties", {})
+            #         do_put_fuzzing(mytestcase=self, baseurl=baseurl,
+            #                        headers=headers, path=path,
+            #                        pathvars=pathvars, putvars=putvars,
+            #                        responses=responses)
+            #     elif 'requestBody' in methodvalues.keys():
+            #         putvars = methodvalues.get("requestBody", {}).get(
+            #             "content", {}).get("application/json", {}).get(
+            #             "schema", {}).get("properties", {})
+            #         do_put_fuzzing(mytestcase=self, baseurl=baseurl,
+            #                        headers=headers, path=path,
+            #                        putvars=putvars, responses=responses)
             else:
                 fuzz_count -= 1  # method in spec is not fuzzed
     print("Fuzzed " + str(fuzz_count) + " endpoints")
