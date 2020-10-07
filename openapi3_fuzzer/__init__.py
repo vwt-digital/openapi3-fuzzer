@@ -414,13 +414,13 @@ def do_fuzzing(my_testcase: TestCase, headers: Dict[str, str], spec_r: str):
             #                         headers=headers, path=path,
             #                         pathvars=pathvars, responses=responses)
 
-            if method == 'delete':
-                if 'parameters' in methodvalues.keys():
-                    pathvars = methodvalues.get("parameters", {})
-                    responses = list(methodvalues.get("responses", {}).keys())
-                    do_delete_fuzzing(mytestcase=self, baseurl=baseurl,
-                                      headers=headers, path=path,
-                                      pathvars=pathvars, responses=responses)
+            # if method == 'delete':
+            #     if 'parameters' in methodvalues.keys():
+            #         pathvars = methodvalues.get("parameters", {})
+            #         responses = list(methodvalues.get("responses", {}).keys())
+            #         do_delete_fuzzing(mytestcase=self, baseurl=baseurl,
+            #                           headers=headers, path=path,
+            #                           pathvars=pathvars, responses=responses)
             if method == 'post':
                 responses = list(methodvalues.get("responses", {}).keys())
                 if 'requestBody' in methodvalues.keys() and \
