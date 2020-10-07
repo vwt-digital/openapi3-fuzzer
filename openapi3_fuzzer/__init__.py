@@ -192,7 +192,8 @@ def generate_payloads_from_request_vars(request_vars: dict) -> List[Dict[str, st
     @param request_vars: dict of requestBody variables
     @return: list of payload dicts
     """
-    FUZZ_TYPES = ["int", "str", "arr", "none"]  # constant list of types to generate from
+    # FUZZ_TYPES = ["int", "str", "arr", "none"]  # constant list of types to generate from
+    FUZZ_TYPES = ["int", "str"]  # constant list of types to generate from
     payloads = []
     payload = {}
 
@@ -215,10 +216,10 @@ def generate_payloads_from_request_vars(request_vars: dict) -> List[Dict[str, st
                                 payload[param_key] = fuzz_pattern.rstrip()
                         elif fuzz_type == "str":
                             payload[param_key] = fuzz_pattern.rstrip()
-                        elif fuzz_type == "arr":
-                            payload[param_key] = fuzz_pattern.rstrip()
-                        elif fuzz_type == "none":
-                            payload[param_key] = fuzz_pattern.rstrip()
+                        # elif fuzz_type == "arr":
+                        #     payload[param_key] = fuzz_pattern.rstrip()
+                        # elif fuzz_type == "none":
+                        #     payload[param_key] = fuzz_pattern.rstrip()
                     else:
                         if data_type == "int" or data_type == "number":
                             try:
