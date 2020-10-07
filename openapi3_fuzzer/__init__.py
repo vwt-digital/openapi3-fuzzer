@@ -194,7 +194,7 @@ def generate_payloads_from_request_vars(request_vars: dict) -> List[Dict[str, st
     """
     FUZZ_TYPES = ["int", "str", "arr", "none"]  # constant list of types to generate from
     payloads = []
-    # payload = {}
+    payload = {}
 
     for fuzz_type in FUZZ_TYPES:
         for request_key, request_value in request_vars.items():
@@ -204,7 +204,7 @@ def generate_payloads_from_request_vars(request_vars: dict) -> List[Dict[str, st
                 payload = {}
                 for param_key, param_value in request_vars.items():
                     data_type = param_value.get("type", "")
-                    # happy_day_string = get_happyday_pattern(data_type)
+                    happy_day_string = get_happyday_pattern(data_type)
                     # FIXME: Why loop twice over the same list and then only do something when both indices match?
                     if param_key == request_key:
                         # fuzz both data type and fuzz type
@@ -219,16 +219,14 @@ def generate_payloads_from_request_vars(request_vars: dict) -> List[Dict[str, st
                             payload[param_key] = fuzz_pattern.rstrip()
                         elif fuzz_type == "none":
                             payload[param_key] = fuzz_pattern.rstrip()
-                        # FIXME: Following block commented out since it was not active (read: was broken) in version
-                        #  1.2.1
-                        # else:
-                        #     if data_type == "int" or data_type == "number":
-                        #         try:
-                        #             payload[param_key] = int(happy_day_string)
-                        #         except ValueError:
-                        #             payload[param_key] = happy_day_string
-                        #     else:
-                        #         payload[param_key] = happy_day_string
+                        else:
+                            if data_type == "int" or data_type == "number":
+                                try:
+                                    payload[param_key] = int(happy_day_string)
+                                except ValueError:
+                                    payload[param_key] = happy_day_string
+                            else:
+                                payload[param_key] = happy_day_string
                 payloads.append(payload)
     payloads_unique = []
     for payload in payloads:
