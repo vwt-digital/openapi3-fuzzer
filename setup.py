@@ -15,7 +15,7 @@ setup(
     description='Openapi3 fuzzer',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
-    test_suite='test.load_test_suite',
+    # test_suite='test.load_test_suite',
     author='VWT Digital',
     author_email='support@vwt.digital',
     url='https://github.com/vwt-digital/openapi3-fuzzer/tree/master',
