@@ -1,3 +1,4 @@
-prance==0.17.0
-flask_testing==0.8
-connexion==2.7.0
+prance == 0.17.0
+flask_testing == 0.8
+connexion == 2.2.0
+werkzeug == 0.16.1

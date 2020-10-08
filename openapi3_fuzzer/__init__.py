@@ -205,7 +205,7 @@ def generate_payloads_from_request_vars(request_vars: dict) -> List[Dict[str, st
                 for param_key, param_value in request_vars.items():
                     data_type = param_value.get("type", "")
                     happy_day_string = get_happyday_pattern(data_type)
-
+                    # FIXME: Why loop twice over the same list and then only do something when both indices match?
                     if param_key == request_key:
                         # fuzz both data type and fuzz type
                         if fuzz_type == "int" or data_type == "int" or data_type == "number":
