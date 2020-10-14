@@ -24,6 +24,7 @@ steps:
       - |
         source "$$VENV"/bin/activate
         export TAG_NAME="$TAG_NAME"
+        python3 -m pip install pytest==6.1.1
         python3 -W ignore::DeprecationWarning setup.py test
 
   # Build package
