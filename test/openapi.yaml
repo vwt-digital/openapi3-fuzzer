@@ -26,7 +26,7 @@ paths:
         '404':
           description: Not found.
       x-codegen-request-body-name: body
-      x-openapi-router-controller: app.controller
+      x-openapi-router-controller: openapi_server.controllers.register_controller
 components:
   parameters:
     register_id:

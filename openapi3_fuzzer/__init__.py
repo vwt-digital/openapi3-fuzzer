@@ -385,7 +385,7 @@ def do_put_fuzzing(*args, **kwargs):
     return True
 
 
-def do_fuzzing(my_testcase: TestCase, headers: Dict[str, str], spec_r: str):
+def do_fuzzing(my_testcase: TestCase, headers: Dict[str, str], spec_r: str) -> int:
     self = my_testcase
     baseurl = ""
 
@@ -405,7 +405,7 @@ def do_fuzzing(my_testcase: TestCase, headers: Dict[str, str], spec_r: str):
                     do_get_fuzzing(mytestcase=self, baseurl=baseurl,
                                    headers=headers, path=path,
                                    pathvars=pathvars, responses=responses)
-            if method == 'head':
+            elif method == 'head':
                 if 'parameters' in methodvalues.keys():
                     pathvars = methodvalues.get("parameters", {})
                     responses = list(methodvalues.get("responses", {}).keys())
@@ -413,14 +413,14 @@ def do_fuzzing(my_testcase: TestCase, headers: Dict[str, str], spec_r: str):
                                     headers=headers, path=path,
                                     pathvars=pathvars, responses=responses)
 
-            if method == 'delete':
+            elif method == 'delete':
                 if 'parameters' in methodvalues.keys():
                     pathvars = methodvalues.get("parameters", {})
                     responses = list(methodvalues.get("responses", {}).keys())
                     do_delete_fuzzing(mytestcase=self, baseurl=baseurl,
                                       headers=headers, path=path,
                                       pathvars=pathvars, responses=responses)
-            if method == 'post':
+            elif method == 'post':
                 responses = list(methodvalues.get("responses", {}).keys())
                 if 'requestBody' in methodvalues.keys() and \
                         'parameters' in methodvalues.keys():
@@ -439,7 +439,7 @@ def do_fuzzing(my_testcase: TestCase, headers: Dict[str, str], spec_r: str):
                     do_post_fuzzing(mytestcase=self, baseurl=baseurl,
                                     headers=headers, path=path,
                                     postvars=postvars, responses=responses)
-            if method == 'put':
+            elif method == 'put':
                 responses = list(methodvalues.get("responses", {}).keys())
                 if all(key in methodvalues.keys() for key in ['requestBody', 'parameters']):
                     pathvars = methodvalues.get("parameters")
@@ -460,10 +460,18 @@ def do_fuzzing(my_testcase: TestCase, headers: Dict[str, str], spec_r: str):
             else:
                 fuzz_count -= 1  # method in spec is not fuzzed
     print("Fuzzed " + str(fuzz_count) + " endpoints")
+    return fuzz_count
 
 
 class FuzzIt:
     def __init__(self, spec_r: str, token: str, test_app: TestCase, header_addition: Dict[str, str] = None):
+        """
+        Should-be-function that fuzzes app based on given openapi spec
+        @param spec_r: path to openapi spec
+        @param token: bearer token
+        @param test_app: app to test
+        @param header_addition: any optional header additions
+        """
         headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',

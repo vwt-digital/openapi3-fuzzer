@@ -1,17 +1,23 @@
-# import pytest
-# from openapi3_fuzzer import FuzzIt
-
-# class BasePositiveTestCase(TestCase):
-#
-#     def create_app(self):
-#         app = connexion.App(__name__, specification_dir='app/openapi/')
-#         app.add_api('openapi.yaml', pythonic_params=True)
-#         return app.app
+from flask import Flask
+from openapi3_fuzzer import FuzzIt, do_fuzzing
+from flask_testing import TestCase
 
 
-class TestFuzzer:
+class TestFuzzer(TestCase):
+
+    def create_app(self):
+        return Flask("test_app")
+
     def test_generic_positive(self):
         assert 0xDEADBEEF
 
-    # def test_fuzz_it_positive(self):
-    #     FuzzIt(spec_r='test/app/openapi/openapi.yaml', token='', test_app=self)
+    def test_do_fuzzing(self):
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': f'Bearer '
+        }
+        assert do_fuzzing(self, headers, "test/openapi.yaml") == 1
+
+    def test_FuzzIt_no_errors(self):
+        assert FuzzIt("test/openapi.yaml", '', self)
