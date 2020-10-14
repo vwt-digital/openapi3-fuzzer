@@ -15,9 +15,9 @@ class TestFuzzer(TestCase):
         headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'Authorization': f'Bearer '
+            'Authorization': 'Bearer ',
         }
         assert do_fuzzing(self, headers, "test/openapi.yaml") == 1
 
     def test_FuzzIt_no_errors(self):
-        assert FuzzIt("test/openapi.yaml", '', self)
+        assert FuzzIt("test/openapi.yaml", 'test', self)

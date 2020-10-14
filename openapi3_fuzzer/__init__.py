@@ -475,7 +475,7 @@ class FuzzIt:
         headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'Authorization': f'Bearer {token}'
+            'Authorization': f'Bearer {token}',
         }
         if header_addition is not None and isinstance(header_addition, dict):
             for key, value in header_addition.items():
