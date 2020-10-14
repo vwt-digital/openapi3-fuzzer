@@ -24,7 +24,7 @@ steps:
       - |
         source "$$VENV"/bin/activate
         export TAG_NAME="$TAG_NAME"
-        python3 setup.py test
+        python3 -W ignore::DeprecationWarning setup.py test
 
   # Build package
   - name: gcr.io/cloud-builders/gcloud
