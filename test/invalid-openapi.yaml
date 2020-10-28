@@ -10,24 +10,11 @@ info:
 x-zally-ignore: ['105']  # No oauth for this API
 servers:
   - url: /
+    # invalid:
+    get:
+      summary: this is an invalid field
 paths:
   /positive/plains/{register}:
-    get:
-      summary: Use the testers
-      description: Get the plain positive test
-      operationId: positive_plain
-      parameters:
-        - $ref: "#/components/parameters/register_id"
-      responses:
-        '200':
-          description: Successful response.
-        '400':
-          description: Bad request.
-        '404':
-          description: Not found.
-      x-codegen-request-body-name: body
-      x-openapi-router-controller: openapi_server.controllers.register_controller
-  /positive/plains/:
     get:
       summary: Use the testers
       description: Get the plain positive test

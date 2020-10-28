@@ -1,0 +1,25 @@
+---
+openapi: 3.0.1
+info:
+  title: fuzzer testers
+  description: test fuzzer
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  version: 1.0.0
+x-zally-ignore: ['105']  # No oauth for this API
+servers:
+  - url: /
+paths:
+components:
+  parameters:
+    register_id:
+      style: simple
+      explode: false
+      name: register
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 9223372036854775807
+      in: path
+      required: true
