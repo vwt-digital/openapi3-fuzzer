@@ -31,7 +31,7 @@ paths:
     get:
       summary: Use the testers
       description: Get the plain positive test
-      operationId: positive_plain
+      operationId: positive_plain1
       parameters:
         - $ref: "#/components/parameters/register_id"
       responses:
