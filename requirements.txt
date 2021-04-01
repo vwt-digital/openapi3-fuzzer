@@ -8,7 +8,7 @@ Flask-Testing==0.8.0
 idna==2.10
 inflection==0.5.1
 itsdangerous==1.1.0
-Jinja2==2.11.2
+Jinja2==2.11.3
 jsonschema==2.6.0
 MarkupSafe==1.1.1
 openapi-spec-validator==0.2.9
