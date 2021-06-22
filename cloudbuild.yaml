@@ -6,7 +6,7 @@ options:
     - 'VENV=/workspace/venv'
 steps:
   # Create virtualenv
-  - name: gcr.io/cloud-builders/gcloud
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:latest'
     entrypoint: bash
     args:
       - -c
@@ -17,7 +17,7 @@ steps:
         pip install twine
 
   # Run unittests
-  - name: gcr.io/cloud-builders/gcloud
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:latest'
     entrypoint: bash
     args:
       - -c
@@ -28,7 +28,7 @@ steps:
         python3 -W ignore::DeprecationWarning setup.py test
 
   # Build package
-  - name: gcr.io/cloud-builders/gcloud
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:latest'
     entrypoint: bash
     args:
       - -c
@@ -38,7 +38,7 @@ steps:
         python setup.py sdist bdist_wheel
 
   # Test build output
-  - name: gcr.io/cloud-builders/gcloud
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:latest'
     entrypoint: bash
     args:
       - -c
@@ -47,7 +47,7 @@ steps:
         twine check dist/*
 
   # Publish package when tagged
-  - name: gcr.io/cloud-builders/gcloud
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:latest'
     entrypoint: bash
     args:
       - -c
