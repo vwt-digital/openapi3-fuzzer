@@ -1,0 +1,18 @@
+---
+name: Validated
+on:
+  push:
+    branches: [develop]
+
+jobs:
+  Validated:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validation
+        run: |
+          STR='✓ changes have been validated'
+          if ! [[ "${{ github.event.head_commit.message }}" =~ .*"$STR".* ]]; 
+          then
+            echo "Changes have not been validated"
+            exit 1
+          fi
