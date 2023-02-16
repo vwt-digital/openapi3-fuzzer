@@ -1,4 +1,4 @@
 connexion==2.7.0
 Flask-Testing==0.8.1
 prance==0.20.2
-Werkzeug==1.0.1
+Werkzeug==2.2.3
